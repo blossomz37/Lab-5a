@@ -28,6 +28,25 @@ except ImportError as e:
 config = get_config()
 data_mapper = get_data_mapper()
 
+# Initialize database if it doesn't exist (for deployment)
+def ensure_database_exists():
+    """Ensure database exists, create if necessary"""
+    db_path = project_root / "data" / "processed" / "books_data.duckdb"
+    if not db_path.exists():
+        st.info("🔄 Initializing database for first use...")
+        try:
+            # Import and run database creation
+            from init_database import create_database
+            if create_database():
+                st.success("✅ Database created successfully!")
+                st.rerun()
+            else:
+                st.error("❌ Failed to create database. Please check the logs.")
+                st.stop()
+        except Exception as e:
+            st.error(f"❌ Database initialization failed: {e}")
+            st.stop()
+
 # Utility functions
 def parse_author_markdown(author_text):
     """Parse author markdown link and return clean name and URL"""
@@ -658,6 +677,9 @@ def search_books(title, author, genre, min_rating, max_price, limit):
 
 def main():
     """Main application"""
+    
+    # Ensure database exists (important for deployment)
+    ensure_database_exists()
     
     # Load database
     load_database()
