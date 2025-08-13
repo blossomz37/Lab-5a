@@ -1,0 +1,159 @@
+# Data Mapping Configuration for Book Explorer
+# Maps raw data fields to display specifications and genre names
+
+# Genre Display Mappings
+genres:
+  fantasy: "Fantasy"
+  erotica: "Romance Erotica"
+  gay_romance: "Gay Romance"
+  historical_romance: "Historical Romance"
+  sff: "Science Fiction & Fantasy"
+  m_t_s: "Mystery, Thriller & Suspense"
+  romance_1hr: "Romance Short-Reads (1hr)"
+  urban_fantasy: "Urban Fantasy"
+  teen_and_ya: "Teen and Young Adult"
+  paranormal: "Paranormal"
+  science_fiction: "Science Fiction"
+  cozy_mystery: "Cozy Mystery"
+  science_fiction_romance: "Science Fiction Romance"
+  romance: "Romance"
+
+# Field Display Configuration
+# Each field specifies how it should be displayed in the web app
+fields:
+  Title:
+    display_type: "hyperlink"
+    display_name: "Title"
+    link_field: "bookURL"
+    searchable: true
+    
+  ASIN:
+    display_type: "display"
+    display_name: "ASIN"
+    searchable: true
+    
+  kuStatus:
+    display_type: "ignore"
+    
+  Author:
+    display_type: "hyperlink"
+    display_name: "Author"
+    searchable: true
+    # Raw data has format: [Name](URL)
+    
+  ISBN:
+    display_type: "display"
+    display_name: "ISBN"
+    # Extract from last path segment of Author hyperlink
+    
+  Series:
+    display_type: "display"
+    display_name: "Series"
+    
+  nReviews:
+    display_type: "display"
+    display_name: "Reviews"
+    format: "number"
+    
+  reviewAverage:
+    display_type: "display"
+    display_name: "Average Rating"
+    format: "stars"
+    
+  price:
+    display_type: "display"
+    display_name: "Price"
+    format: "currency"
+    
+  salesRank:
+    display_type: "display"
+    display_name: "Genre Top 100 Rank"
+    format: "number"
+    
+  releaseDate:
+    display_type: "display"
+    display_name: "Release Date"
+    format: "date_mmddyy"
+    
+  nPages:
+    display_type: "display"
+    display_name: "Page Count"
+    format: "number"
+    
+  publisher:
+    display_type: "display"
+    display_name: "Publisher"
+    
+  isTrad:
+    display_type: "display"
+    display_name: "Traditional Publisher"
+    format: "yes_no"
+    
+  blurbText:
+    display_type: "display"
+    display_name: "Book Blurb"
+    format: "expandable_text"
+    lines_preview: 3
+    
+  coverImage:
+    display_type: "image"
+    display_name: "Book Cover"
+    
+  bookURL:
+    display_type: "hyperlink_source"
+    # Used as source for Title hyperlink
+    
+  topicTags:
+    display_type: "display"
+    display_name: "Topic Tags"
+    format: "tag_list"
+    separator: "|"
+    
+  blurbKeyphrases:
+    display_type: "display"
+    display_name: "Key Phrases"
+    
+  subcatsList:
+    display_type: "display"
+    display_name: "Subcategories"
+    format: "tag_list"
+    separator: "#"
+    
+  isFree:
+    display_type: "display"
+    display_name: "Price Type"
+    format: "free_paid"
+    
+  isDuplicateASIN:
+    display_type: "ignore"
+    
+  estimatedBlurbPOV:
+    display_type: "display"
+    display_name: "Point of View"
+    
+  hasSupernatural:
+    display_type: "ignore"
+    
+  hasRomance:
+    display_type: "ignore"
+
+# Card Display Configuration
+# Defines which fields to show in book cards and their order
+card_display:
+  primary_fields:
+    - "Title"
+    - "Author"
+    - "reviewAverage"
+    - "nReviews"
+    - "price"
+  
+  secondary_fields:
+    - "Series"
+    - "nPages"
+    - "releaseDate"
+    - "publisher"
+  
+  expandable_fields:
+    - "blurbText"
+    - "topicTags"
+    - "subcatsList"
