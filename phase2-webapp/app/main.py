@@ -856,40 +856,72 @@ def show_analytics(selected_genres):
     
     col1, col2, col3, col4 = st.columns(4)
     
+    # Custom function to create metric with tooltip
+    def create_metric_with_tooltip(label, value, delta, tooltip_text):
+        """Create a custom metric card with tooltip"""
+        # Truncate value if too long
+        display_value = value if len(value) <= 20 else value[:17] + "..."
+        
+        return f"""
+        <div style="background-color: #262730; padding: 1rem; border-radius: 0.5rem; height: 100%;">
+            <div style="color: #808495; font-size: 0.9rem; margin-bottom: 0.25rem;">{label}</div>
+            <div title="{tooltip_text}" style="color: #fafafa; font-size: 1.5rem; font-weight: bold; cursor: help; margin-bottom: 0.25rem;">
+                {display_value}
+            </div>
+            <div style="color: #5ec85e; font-size: 0.9rem;">↑ {delta}</div>
+        </div>
+        """
+    
     # Best opportunity
     best_opportunity = df.loc[df['market_opportunity'].idxmax()]
     with col1:
-        st.metric(
-            "🏆 Best Opportunity", 
-            best_opportunity['genre'],
-            f"MOI: {best_opportunity['market_opportunity']:.0f}"
+        st.markdown(
+            create_metric_with_tooltip(
+                "🏆 Best Opportunity",
+                best_opportunity['genre'],
+                f"MOI: {best_opportunity['market_opportunity']:.0f}",
+                f"Full genre name: {best_opportunity['genre']}"
+            ),
+            unsafe_allow_html=True
         )
     
     # Highest revenue potential
     best_revenue = df.loc[df['revenue_potential'].idxmax()]
     with col2:
-        st.metric(
-            "💰 Highest Revenue", 
-            best_revenue['genre'],
-            f"${best_revenue['revenue_potential']:.0f}"
+        st.markdown(
+            create_metric_with_tooltip(
+                "💰 Highest Revenue",
+                best_revenue['genre'],
+                f"${best_revenue['revenue_potential']:.0f}",
+                f"Full genre name: {best_revenue['genre']}"
+            ),
+            unsafe_allow_html=True
         )
     
     # Lowest competition
     lowest_competition = df.loc[df['competition_level'].idxmin()]
     with col3:
-        st.metric(
-            "🎯 Least Competitive", 
-            lowest_competition['genre'],
-            f"{lowest_competition['competition_level']:.0f}% full"
+        st.markdown(
+            create_metric_with_tooltip(
+                "🎯 Least Competitive",
+                lowest_competition['genre'],
+                f"{lowest_competition['competition_level']:.0f}% full",
+                f"Full genre name: {lowest_competition['genre']}"
+            ),
+            unsafe_allow_html=True
         )
     
     # Easiest entry
     easiest_entry = df.loc[df['entry_difficulty'].idxmin()]
     with col4:
-        st.metric(
-            "🚀 Easiest Entry", 
-            easiest_entry['genre'],
-            f"{easiest_entry['entry_difficulty']:.0f}% difficulty"
+        st.markdown(
+            create_metric_with_tooltip(
+                "🚀 Easiest Entry",
+                easiest_entry['genre'],
+                f"{easiest_entry['entry_difficulty']:.0f}% difficulty",
+                f"Full genre name: {easiest_entry['genre']}"
+            ),
+            unsafe_allow_html=True
         )
     
     st.markdown("---")
