@@ -322,6 +322,9 @@ def display_book_with_cover(book, rank=None):
             </div>
             ''', unsafe_allow_html=True)
         
+        # Add spacing before expandable details
+        st.markdown('<div style="margin-top: 0.5rem;"></div>', unsafe_allow_html=True)
+        
         # Expandable detailed information
         with st.expander("📋 Show Details", expanded=False):
             col1, col2 = st.columns(2)
@@ -425,7 +428,6 @@ def display_book_with_cover(book, rank=None):
                     ''', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
 
 # Page configuration
 st.set_page_config(
@@ -556,16 +558,15 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .book-compact {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 0.75rem;
-        margin: 0.25rem 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0.25rem;
         transition: all 0.2s ease;
+        min-height: auto;
     }
     .book-compact:hover {
-        background: #e9ecef;
-        border-color: #1f77b4;
+        background: rgba(0, 0, 0, 0.02);
     }
     .book-title {
         font-size: 1.1rem;
@@ -589,10 +590,9 @@ st.markdown("""
     }
     .quick-info {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
         font-size: 0.85rem;
     }
     .rank-compact {
@@ -631,6 +631,23 @@ st.markdown("""
     }
     .sidebar .sidebar-content {
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    }
+    /* Hide browser autocomplete suggestions and floating text */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px white inset !important;
+        -webkit-text-fill-color: #333 !important;
+    }
+    /* Hide browser autocomplete dropdown */
+    input::-webkit-search-cancel-button,
+    input::-webkit-search-decoration {
+        -webkit-appearance: none;
+    }
+    /* Disable browser search suggestions */
+    .stTextInput input {
+        autocomplete: off !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -1140,8 +1157,8 @@ def show_search(selected_genres):
     col1, col2 = st.columns(2)
     
     with col1:
-        title_search = st.text_input("📖 Book Title", placeholder="Enter title keywords...")
-        author_search = st.text_input("✍️ Author Name", placeholder="Enter author name...")
+        title_search = st.text_input("📖 Book Title", placeholder="Enter title keywords...", key="book_title_search")
+        author_search = st.text_input("✍️ Author Name", placeholder="Enter author name...", key="author_name_search")
     
     with col2:
         # Use selected genres for dropdown, but allow "All" option
@@ -1327,18 +1344,6 @@ def show_price_analysis(selected_genres):
         """
         st.markdown(metrics_html, unsafe_allow_html=True)
         
-        with st.expander("📖 Understanding Price Metrics"):
-            st.markdown("""
-            **Key differences:**
-            - **Average** = Total value ÷ number of books (affected by outliers)
-            - **Median** = Middle price when all prices are sorted (more representative)
-            - **Range** = Shows market breadth from budget to premium
-            
-            **For pricing decisions:**
-            - **Price near median** = Appeal to typical buyers
-            - **Price above average** = Target premium market
-            - **Consider the range** = Understand competitive landscape
-            """)
     
     with col4:
         st.subheader("💡 Pricing Insights")
@@ -1372,7 +1377,28 @@ def show_price_analysis(selected_genres):
         
         for i, insight in enumerate(insights, 1):
             st.markdown(f"{i}. {insight}")
-        
+    
+    # Add horizontal line to separate content from expanders
+    st.markdown("---")
+    
+    # Now create aligned expander section
+    col5, col6 = st.columns(2)
+    
+    with col5:
+        with st.expander("📖 Understanding Price Metrics"):
+            st.markdown("""
+            **Key differences:**
+            - **Average** = Total value ÷ number of books (affected by outliers)
+            - **Median** = Middle price when all prices are sorted (more representative)
+            - **Range** = Shows market breadth from budget to premium
+            
+            **For pricing decisions:**
+            - **Price near median** = Appeal to typical buyers
+            - **Price above average** = Target premium market
+            - **Consider the range** = Understand competitive landscape
+            """)
+    
+    with col6:
         with st.expander("📖 How to Use These Insights"):
             st.markdown("""
             **For new authors:**
