@@ -2,6 +2,18 @@
 
 A comprehensive data engineering project that demonstrates ETL processes and modern web application development using real book data from 14 genres.
 
+## 🎓 Course Information
+
+This project is part of the **FFA Software Support Classes**. 
+
+**Course Access**: [https://future-fiction-academy.teachable.com/courses/enrolled/2775872](https://future-fiction-academy.teachable.com/courses/enrolled/2775872)
+
+**Live Demo**: [https://ffa-lab-5.streamlit.app/](https://ffa-lab-5.streamlit.app/) *(Student demo - available until Friday 8/22/25)*
+
+**GitHub Repository**: [https://github.com/blossomz37/Lab-5a](https://github.com/blossomz37/Lab-5a) *(Available until Friday 8/22/25)*
+
+> **Note**: For access after 8/22/25, contact the instructor **SweetCarlo** on Discord.
+
 ## 🎯 Project Overview
 
 This project consists of two phases:

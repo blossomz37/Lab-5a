@@ -3,6 +3,14 @@
 ## Overview
 This project is designed to work both locally (for development and learning) and in the cloud (for sharing and portfolios).
 
+## 🎓 Course & Demo Information
+
+**Course**: This deployment guide is part of the FFA Software Support Classes  
+**Live Demo**: [https://ffa-lab-5.streamlit.app/](https://ffa-lab-5.streamlit.app/) *(Available until Friday 8/22/25)*  
+**GitHub Repo**: [https://github.com/blossomz37/Lab-5a](https://github.com/blossomz37/Lab-5a) *(Available until Friday 8/22/25)*
+
+> **Contact**: For access after 8/22/25, DM **SweetCarlo** on Discord.
+
 ## 🏠 Local Development
 
 ### Quick Start

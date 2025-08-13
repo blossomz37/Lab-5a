@@ -6,6 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a book data processing pipeline that converts Excel files containing book metadata from various genres into a unified DuckDB database. The project processes approximately 1,400 books across 14 different genres.
 
+**Course Information**: Part of FFA Software Support Classes  
+**Live Demo**: https://ffa-lab-5.streamlit.app/ (Available until Friday 8/22/25)  
+**GitHub Repo**: https://github.com/blossomz37/Lab-5a (Available until Friday 8/22/25)  
+**Contact**: For access after 8/22/25, DM SweetCarlo on Discord
+
 ## Key Commands
 
 ### Environment Setup (First Time)
