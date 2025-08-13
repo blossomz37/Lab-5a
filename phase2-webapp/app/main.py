@@ -327,6 +327,41 @@ def display_book_with_cover(book, rank=None):
         
         # Expandable detailed information
         with st.expander("📋 Show Details", expanded=False):
+            # Book description at the top, spanning full width
+            if blurb and blurb.strip() and blurb != 'N/A':
+                st.markdown("**📖 Description**")
+                clean_blurb = str(blurb).strip()
+                # Format paragraphs with proper spacing
+                paragraphs = clean_blurb.split('\n\n')  # Split on double line breaks
+                formatted_paragraphs = []
+                for para in paragraphs:
+                    if para.strip():
+                        # Replace single line breaks with spaces, preserve paragraph breaks
+                        formatted_para = para.replace('\n', ' ').strip()
+                        formatted_paragraphs.append(formatted_para)
+                
+                formatted_blurb = '<br><br>'.join(formatted_paragraphs)
+                
+                st.markdown(f'''
+                <div style="
+                    font-size: 0.9em; 
+                    line-height: 1.5; 
+                    max-height: 150px; 
+                    overflow-y: scroll; 
+                    padding: 0.75rem; 
+                    background: #f8f9fa; 
+                    border: 1px solid #dee2e6;
+                    border-radius: 4px; 
+                    color: #333333;
+                    scrollbar-width: thin;
+                    scrollbar-color: #6c757d #f8f9fa;
+                    margin-bottom: 1rem;
+                ">
+                    {formatted_blurb}
+                </div>
+                ''', unsafe_allow_html=True)
+            
+            # Two columns below for other details
             col1, col2 = st.columns(2)
             
             with col1:
@@ -393,39 +428,6 @@ def display_book_with_cover(book, rank=None):
                 # Series info if available
                 if series and str(series).strip() and series != 'N/A':
                     st.markdown(f"**Series:** {series}")
-                
-                # Book blurb
-                if blurb and blurb.strip() and blurb != 'N/A':
-                    st.markdown("**📖 Description**")
-                    clean_blurb = str(blurb).strip()
-                    # Format paragraphs with proper spacing
-                    paragraphs = clean_blurb.split('\n\n')  # Split on double line breaks
-                    formatted_paragraphs = []
-                    for para in paragraphs:
-                        if para.strip():
-                            # Replace single line breaks with spaces, preserve paragraph breaks
-                            formatted_para = para.replace('\n', ' ').strip()
-                            formatted_paragraphs.append(formatted_para)
-                    
-                    formatted_blurb = '<br><br>'.join(formatted_paragraphs)
-                    
-                    st.markdown(f'''
-                    <div style="
-                        font-size: 0.9em; 
-                        line-height: 1.5; 
-                        max-height: 150px; 
-                        overflow-y: scroll; 
-                        padding: 0.75rem; 
-                        background: #f8f9fa; 
-                        border: 1px solid #dee2e6;
-                        border-radius: 4px; 
-                        color: #333333;
-                        scrollbar-width: thin;
-                        scrollbar-color: #6c757d #f8f9fa;
-                    ">
-                        {formatted_blurb}
-                    </div>
-                    ''', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
 
