@@ -164,8 +164,42 @@ class BookDatabase:
             for row in result
         ]
     
+    def get_authors_by_genre(self, selected_genres: List[str] = None) -> List[Dict[str, Any]]:
+        """Get unique author count by genre using display names"""
+        where_conditions = ["Author IS NOT NULL"]
+        
+        if selected_genres:
+            genre_list = "', '".join(selected_genres)
+            where_conditions.append(f"COALESCE(genre_display, genre) IN ('{genre_list}')")
+        
+        where_clause = " AND ".join(where_conditions)
+        
+        query = f"""
+        SELECT 
+            COALESCE(genre_display, genre) as genre,
+            COUNT(DISTINCT Author) as unique_authors,
+            COUNT(*) as total_books,
+            ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT Author), 1) as books_per_author
+        FROM books
+        WHERE {where_clause}
+        GROUP BY COALESCE(genre_display, genre)
+        ORDER BY unique_authors DESC
+        """
+        
+        result = self.execute_query(query)
+        return [
+            {
+                'genre': row[0],
+                'unique_authors': row[1],
+                'total_books': row[2],
+                'books_per_author': float(row[3]) if row[3] else 0.0
+            }
+            for row in result
+        ]
+    
     def search_books(self, title: str = "", author: str = "", genre: str = "", 
-                    min_rating: float = 0, max_price: float = 1000, 
+                    min_rating: float = 0, max_rating: float = 5.0, 
+                    min_price: float = 0, max_price: float = 1000, 
                     limit: int = 100) -> List[Dict[str, Any]]:
         """Search books with filters"""
         
@@ -179,6 +213,10 @@ class BookDatabase:
             conditions.append(f"COALESCE(genre_display, genre) = '{genre}'")
         if min_rating > 0:
             conditions.append(f"reviewAverage >= {min_rating}")
+        if max_rating < 5.0:
+            conditions.append(f"reviewAverage <= {max_rating}")
+        if min_price > 0:
+            conditions.append(f"price >= {min_price}")
         if max_price < 1000:
             conditions.append(f"price <= {max_price}")
         

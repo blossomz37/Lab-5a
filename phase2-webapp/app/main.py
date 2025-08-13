@@ -669,11 +669,17 @@ def get_price_stats(selected_genres=None):
     with db:
         return db.get_price_stats(selected_genres)
 
-def search_books(title, author, genre, min_rating, max_price, limit):
+def search_books(title, author, genre, min_rating, max_rating, min_price, max_price, limit):
     """Search books (not cached for real-time results)"""
     db = BookDatabase()
     with db:
-        return db.search_books(title, author, genre, min_rating, max_price, limit)
+        return db.search_books(title, author, genre, min_rating, max_rating, min_price, max_price, limit)
+
+def get_authors_by_genre(selected_genres=None):
+    """Get unique authors by genre (no caching for dynamic filtering)"""
+    db = BookDatabase()
+    with db:
+        return db.get_authors_by_genre(selected_genres)
 
 def main():
     """Main application"""
@@ -770,24 +776,27 @@ def show_dashboard(selected_genres):
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("📚 Books by Genre")
-        genre_stats = get_genre_stats(selected_genres)
-        df_genres = pd.DataFrame(genre_stats)
+        st.subheader("👥 Unique Authors by Genre")
+        authors_stats = get_authors_by_genre(selected_genres)
+        df_authors = pd.DataFrame(authors_stats)
         
         fig = px.bar(
-            df_genres, 
-            x='book_count', 
+            df_authors, 
+            x='unique_authors', 
             y='genre',
             orientation='h',
-            color='book_count',
+            color='unique_authors',
             color_continuous_scale='viridis',
-            title="Number of Books per Genre"
+            title="Number of Unique Authors per Genre"
         )
         fig.update_layout(height=500)
         st.plotly_chart(fig, use_container_width=True)
     
     with col2:
         st.subheader("⭐ Average Rating by Genre")
+        genre_stats = get_genre_stats(selected_genres)
+        df_genres = pd.DataFrame(genre_stats)
+        
         fig = px.bar(
             df_genres, 
             x='avg_rating', 
@@ -854,23 +863,35 @@ def show_analytics(selected_genres):
     # Market Overview Dashboard
     st.subheader("🎯 Market Opportunity Overview")
     
-    col1, col2, col3, col4 = st.columns(4)
-    
     # Custom function to create metric with tooltip
     def create_metric_with_tooltip(label, value, delta, tooltip_text):
         """Create a custom metric card with tooltip"""
-        # Truncate value if too long
-        display_value = value if len(value) <= 20 else value[:17] + "..."
+        # Don't truncate - let it wrap
+        display_value = value
         
         return f"""
-        <div style="background-color: #262730; padding: 1rem; border-radius: 0.5rem; height: 100%;">
+        <div style="background-color: #262730; padding: 1rem; border-radius: 0.5rem; height: 100%; min-height: 120px;">
             <div style="color: #808495; font-size: 0.9rem; margin-bottom: 0.25rem;">{label}</div>
-            <div title="{tooltip_text}" style="color: #fafafa; font-size: 1.5rem; font-weight: bold; cursor: help; margin-bottom: 0.25rem;">
+            <div title="{tooltip_text}" style="
+                color: #fafafa; 
+                font-size: 1.2rem; 
+                font-weight: bold; 
+                cursor: help; 
+                margin-bottom: 0.25rem;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                white-space: normal;
+                line-height: 1.3;
+                min-height: 2.4rem;
+            ">
                 {display_value}
             </div>
             <div style="color: #5ec85e; font-size: 0.9rem;">↑ {delta}</div>
         </div>
         """
+    
+    # First row - 2 columns
+    col1, col2 = st.columns(2)
     
     # Best opportunity
     best_opportunity = df.loc[df['market_opportunity'].idxmax()]
@@ -880,7 +901,7 @@ def show_analytics(selected_genres):
                 "🏆 Best Opportunity",
                 best_opportunity['genre'],
                 f"MOI: {best_opportunity['market_opportunity']:.0f}",
-                f"Full genre name: {best_opportunity['genre']}"
+                f"Genre: {best_opportunity['genre']}"
             ),
             unsafe_allow_html=True
         )
@@ -893,10 +914,16 @@ def show_analytics(selected_genres):
                 "💰 Highest Revenue",
                 best_revenue['genre'],
                 f"${best_revenue['revenue_potential']:.0f}",
-                f"Full genre name: {best_revenue['genre']}"
+                f"Genre: {best_revenue['genre']}"
             ),
             unsafe_allow_html=True
         )
+    
+    # Add vertical spacing between rows
+    st.markdown('<div style="margin-bottom: 1.5rem;"></div>', unsafe_allow_html=True)
+    
+    # Second row - 2 columns
+    col3, col4 = st.columns(2)
     
     # Lowest competition
     lowest_competition = df.loc[df['competition_level'].idxmin()]
@@ -906,7 +933,7 @@ def show_analytics(selected_genres):
                 "🎯 Least Competitive",
                 lowest_competition['genre'],
                 f"{lowest_competition['competition_level']:.0f}% full",
-                f"Full genre name: {lowest_competition['genre']}"
+                f"Genre: {lowest_competition['genre']}"
             ),
             unsafe_allow_html=True
         )
@@ -919,7 +946,7 @@ def show_analytics(selected_genres):
                 "🚀 Easiest Entry",
                 easiest_entry['genre'],
                 f"{easiest_entry['entry_difficulty']:.0f}% difficulty",
-                f"Full genre name: {easiest_entry['genre']}"
+                f"Genre: {easiest_entry['genre']}"
             ),
             unsafe_allow_html=True
         )
@@ -985,6 +1012,8 @@ def show_analytics(selected_genres):
         fig.add_hline(y=df['revenue_potential'].median(), line_dash="dash", line_color="gray")
         fig.add_vline(x=df['competition_level'].median(), line_dash="dash", line_color="gray")
         
+        # Set same height as the first chart for alignment
+        fig.update_layout(height=400)
         st.plotly_chart(fig, use_container_width=True)
         
         with st.expander("📖 How to Interpret Competition vs Revenue"):
@@ -1021,6 +1050,8 @@ def show_analytics(selected_genres):
             },
             color_continuous_scale='RdYlBu_r'
         )
+        # Set same height as the second chart for alignment
+        fig.update_layout(height=400)
         st.plotly_chart(fig, use_container_width=True)
         
         with st.expander("📖 How to Use Quality & Price Analysis"):
@@ -1120,11 +1151,11 @@ def show_search(selected_genres):
         available_genres = ["All"] + (selected_genres if selected_genres else all_available_genres)
         genre_filter = st.selectbox("📚 Genre", available_genres)
         
-        min_rating = st.slider("⭐ Minimum Rating", 0.0, 5.0, 0.0, 0.1)
+        rating_range = st.slider("⭐ Rating Range", 0.0, 5.0, (0.0, 5.0), 0.1)
     
     col3, col4 = st.columns(2)
     with col3:
-        max_price = st.slider("💰 Maximum Price", 0, 100, 50)
+        price_range = st.slider("💰 Price Range", 0, 100, (0, 100), 1)
     with col4:
         limit = st.slider("📊 Results Limit", 10, 500, 50)
     
@@ -1137,7 +1168,9 @@ def show_search(selected_genres):
                 st.warning(f"Selected genre '{effective_genre}' is not in your current genre filter. Showing all selected genres instead.")
                 effective_genre = None
             
-            results = search_books(title_search, author_search, effective_genre, min_rating, max_price, limit)
+            min_rating, max_rating = rating_range
+            min_price, max_price = price_range
+            results = search_books(title_search, author_search, effective_genre, min_rating, max_rating, min_price, max_price, limit)
             
             # Filter results to only show books from selected genres
             if selected_genres and results:
@@ -1174,39 +1207,187 @@ def show_price_analysis(selected_genres):
         st.warning("Please select at least one genre to display data.")
         return
     st.header("💰 Price Analysis")
+    st.markdown("*Understanding pricing strategies and market positioning across genres*")
     
-    # Price distribution by genre
+    # Get price data and stats
     db = BookDatabase()
     with db:
         price_data = db.get_price_data_by_genre(selected_genres)
     
     df_prices = pd.DataFrame(price_data, columns=['genre', 'price'])
-    
-    # Box plot
-    fig = px.box(
-        df_prices, 
-        x='genre', 
-        y='price',
-        title="Price Distribution by Genre"
-    )
-    fig.update_xaxes(tickangle=45)
-    st.plotly_chart(fig, use_container_width=True)
-    
-    # Price histogram
-    fig = px.histogram(
-        df_prices, 
-        x='price', 
-        nbins=30,
-        title="Overall Price Distribution"
-    )
-    st.plotly_chart(fig, use_container_width=True)
-    
-    # Price stats table
     price_stats = get_price_stats(selected_genres)
-    st.subheader("Price Statistics")
     
-    stats_df = pd.DataFrame([price_stats])
-    st.dataframe(stats_df, use_container_width=True)
+    # Create two columns for the main charts
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("📊 Price Distribution by Genre")
+        
+        # Box plot with enhanced styling
+        fig = px.box(
+            df_prices, 
+            x='genre', 
+            y='price',
+            title="Price Range and Outliers by Genre",
+            color='genre',
+            color_discrete_sequence=px.colors.qualitative.Set3
+        )
+        fig.update_xaxes(tickangle=45)
+        fig.update_layout(
+            height=400,
+            bargap=0.3,  # Add spacing between boxes
+            showlegend=False
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        with st.expander("📖 How to Read Box Plots"):
+            st.markdown("""
+            **Box Plot Components:**
+            - **Box** = Middle 50% of prices (25th to 75th percentile)
+            - **Line in box** = Median price
+            - **Whiskers** = Range of typical prices
+            - **Dots** = Outliers (unusually high/low prices)
+            
+            **What to look for:**
+            - **Wide boxes** = High price variation within genre
+            - **High medians** = Premium pricing opportunities
+            - **Many outliers above** = Super-premium market exists
+            """)
+    
+    with col2:
+        st.subheader("📈 Overall Price Distribution")
+        
+        # Enhanced histogram with count-based color intensity
+        fig = px.histogram(
+            df_prices, 
+            x='price', 
+            nbins=25,
+            title="Frequency of Books at Different Price Points",
+            color_discrete_sequence=['#2E86AB'],
+            marginal="rug"  # Add rug plot to show individual data points
+        )
+        
+        # Intensify colors based on count
+        fig.update_traces(
+            marker_color='#2E86AB',
+            marker_line_color='white',
+            marker_line_width=1,
+            opacity=0.8
+        )
+        
+        fig.update_layout(
+            height=400,
+            bargap=0.2,  # Add spacing between bars
+            xaxis_title="Price ($)",
+            yaxis_title="Number of Books"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        with st.expander("📖 How to Use Price Distribution"):
+            st.markdown("""
+            **What this shows:**
+            - **Peak areas** = Most common price points in market
+            - **Gaps** = Underserved price segments (opportunities)
+            - **Long tail** = Premium pricing potential
+            
+            **Pricing strategy tips:**
+            - **Price near peaks** = Compete in crowded segments
+            - **Price in gaps** = Stand out from competition
+            - **Consider genre medians** = Stay competitive within your genre
+            """)
+    
+    st.markdown("---")
+    
+    # Price statistics with enhanced presentation
+    col3, col4 = st.columns(2)
+    
+    with col3:
+        st.subheader("🎯 Key Price Metrics")
+        
+        # Create enhanced metrics display
+        metrics_html = f"""
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem; border-radius: 8px; color: white;">
+                <h3 style="margin: 0; font-size: 1.2rem;">Average Price</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 2rem; font-weight: bold;">${price_stats['average']:.2f}</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1rem; border-radius: 8px; color: white;">
+                <h3 style="margin: 0; font-size: 1.2rem;">Median Price</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 2rem; font-weight: bold;">${price_stats['median']:.2f}</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1rem; border-radius: 8px; color: white;">
+                <h3 style="margin: 0; font-size: 1.2rem;">Lowest Price</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 2rem; font-weight: bold;">${price_stats['min']:.2f}</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1rem; border-radius: 8px; color: white;">
+                <h3 style="margin: 0; font-size: 1.2rem;">Highest Price</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 2rem; font-weight: bold;">${price_stats['max']:.2f}</p>
+            </div>
+        </div>
+        """
+        st.markdown(metrics_html, unsafe_allow_html=True)
+        
+        with st.expander("📖 Understanding Price Metrics"):
+            st.markdown("""
+            **Key differences:**
+            - **Average** = Total value ÷ number of books (affected by outliers)
+            - **Median** = Middle price when all prices are sorted (more representative)
+            - **Range** = Shows market breadth from budget to premium
+            
+            **For pricing decisions:**
+            - **Price near median** = Appeal to typical buyers
+            - **Price above average** = Target premium market
+            - **Consider the range** = Understand competitive landscape
+            """)
+    
+    with col4:
+        st.subheader("💡 Pricing Insights")
+        
+        # Generate dynamic insights
+        insights = []
+        
+        # Price spread analysis
+        price_spread = price_stats['max'] - price_stats['min']
+        avg_vs_median = price_stats['average'] - price_stats['median']
+        
+        if avg_vs_median > 1.0:
+            insights.append("📈 **High-value outliers detected** - Premium pricing opportunities exist in these genres")
+        elif avg_vs_median < -0.5:
+            insights.append("📉 **Budget-focused market** - Most books are priced below average, suggesting price-sensitive readers")
+        else:
+            insights.append("⚖️ **Balanced pricing** - Market shows healthy distribution across price points")
+        
+        if price_spread > 20:
+            insights.append("🎯 **Wide price range** - Multiple market segments from budget ($%.2f) to premium ($%.2f)" % (price_stats['min'], price_stats['max']))
+        else:
+            insights.append("🎯 **Narrow price range** - Concentrated market with limited pricing flexibility")
+        
+        # Recommendation based on median
+        if price_stats['median'] < 5:
+            insights.append("💰 **Budget market dominance** - Consider competitive pricing under $%.2f for maximum reach" % (price_stats['median'] + 1))
+        elif price_stats['median'] > 15:
+            insights.append("💎 **Premium market** - Readers willing to pay $%.2f+ - focus on value and quality" % price_stats['median'])
+        else:
+            insights.append("🎪 **Mid-market sweet spot** - $%.2f-$%.2f range offers good balance of accessibility and value" % (price_stats['median'] - 2, price_stats['median'] + 2))
+        
+        for i, insight in enumerate(insights, 1):
+            st.markdown(f"{i}. {insight}")
+        
+        with st.expander("📖 How to Use These Insights"):
+            st.markdown("""
+            **For new authors:**
+            - **Start near median price** = Proven acceptable price point
+            - **Test premium pricing** = If quality justifies it
+            - **Monitor competitor pricing** = Stay within market expectations
+            
+            **For established authors:**
+            - **Premium positioning** = Charge above median if you have following
+            - **Value pricing** = Below median for wider market reach
+            - **Series pricing** = First book lower, sequels at median+
+            """)
+    
+    st.markdown("---")
+    st.caption("💡 **Tip:** Use these insights alongside your genre's specific data to make informed pricing decisions that balance accessibility with profitability.")
 
 if __name__ == "__main__":
     main()
